@@ -1,0 +1,54 @@
+<section class="login">
+	<div class="login_box">
+		<div class="left">
+			<div class="top_link"><a href="#"><img src="https://drive.google.com/u/0/uc?id=16U__U5dJdaTfNGobB_OpwAJ73vM50rPV&export=download" alt="">Return home</a></div>
+			<div class="contact" *ngIf="login; else register">
+				<!-- Formulario de inicio de sesión -->
+				<form [formGroup]="formLogin" (ngSubmit)="submitLogin()">
+					<h3>SIGN IN</h3>
+					<input type="text" placeholder="EMAIL" formControlName="email" required autocomplete="email">
+					<span class="error-message" *ngIf="formLogin.get('email')?.hasError('required') && (formLogin.get('nombre')?.touched || submitted)">El email es obligatorio.</span>
+					<span class="error-message" *ngIf="formLogin.get('email')?.hasError('email')">El email es inválido.</span>
+
+					<input type="password" placeholder="PASSWORD" formControlName="password">
+					<span class="error-message" *ngIf="formLogin.get('password')?.hasError('required') && (formLogin.get('password')?.touched || submitted)">La contraseña es obligatoria.</span>									
+
+					<button type="button" class="btn btn-link btn-color" (click)="toggleForm()">Registrar</button>						
+					<button type="submit" class="submit">Iniciar Sesión</button>
+				</form>
+			</div>	
+			<ng-template #register>
+				<!-- Formulario de registro -->
+				<div class="contact">
+					<form [formGroup]="formRegister" (ngSubmit)="submitRegister()">
+						<h3 class="register">REGISTRO</h3>
+						<input type="text" placeholder="NOMBRE Y APELLIDO" formControlName="name" required>
+						<span class="error-message" *ngIf="formRegister.get('name')?.hasError('required') && (formRegister.get('name')?.touched || submitted)">El el nombre es obligatorio.</span>
+						
+						<input type="text" placeholder="NICKNAME" formControlName="nick_name" required>
+						<span class="error-message" *ngIf="formRegister.get('nick_name')?.hasError('required') && (formRegister.get('nick_name')?.touched || submitted)">El nick name es obligatorio.</span>
+						
+						<input type="email" placeholder="EMAIL" formControlName="email" required autocomplete="email">
+						<span class="error-message" *ngIf="formRegister.get('email')?.hasError('required') && (formRegister.get('nombre')?.touched || submitted)">El email es obligatorio.</span>
+						<span class="error-message" *ngIf="formRegister.get('email')?.hasError('email')">El email es inválido.</span>
+
+						<input type="password" placeholder="PASSWORD" formControlName="password" (input)="matchPassword()">
+						<span class="error-message" *ngIf="formRegister.get('password')?.hasError('minlength') && submitted">La contraseña debe tener al menos 8 caracteres.</span>	
+
+						<input type="password" placeholder="CONFIRM PASSWORD" formControlName="confirmPassword" (input)="matchPassword()">
+					    <span class="error-message" *ngIf="formRegister.hasError('passwordMismatch', 'confirmPassword')">Las contraseñas no coinciden.</span>						
+
+						<button type="button" class="btn btn-link btn-color" (click)="toggleForm()">Return login</button>						
+						<button type="submit" class="submit submit-register">LET'S GO</button>
+					</form>
+				</div>	
+			</ng-template>			
+		</div>
+		<div class="right">
+			<div class="right-text">
+				<h2>THE BLOG OF POWER</h2>
+				<h5>POWERLIFTING</h5>
+			</div>				
+		</div>
+	</div>
+</section>

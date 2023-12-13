@@ -1,0 +1,21 @@
+<form class="container" [formGroup]="formPatchPublication" (ngSubmit)="submitData()">
+    <div class="mb-3">
+        <label for="title" class="form-label">Titulo: </label>
+        <input type="text" formControlName="title" class="form-control" id="title" aria-describedby="emailHelp" required autofocus>        
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Contenido:</label>
+        <textarea class="form-control" id="content" rows="15" formControlName="content" required></textarea>
+      </div>
+    <div class="mb-3">
+        <label for="id_federation" class="form-label">Federación:</label>
+        <select formControlName="id_federation" class="form-select" aria-label="Default select example" required>        
+            <option value="1">WRPF</option>
+            <option value="2">AAP</option>
+            <option value="3">IPF</option>
+            <option value="4">IPL</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Guardar</button>  
+    <button type="button" class="btn btn-danger" (click)="cancelEdit()">Cancelar</button>
+</form>

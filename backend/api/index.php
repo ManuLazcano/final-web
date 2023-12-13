@@ -1,4 +1,13 @@
 <?php
+header('Access-Control-Allow-Origin: *');
+header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
+header('Access-Control-Allow-Methods: POST, GET, PATCH, DELETE');
+header("Allow: GET, POST, PATCH, DELETE");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {    
+    return 0;    
+}  
+
 require_once('../include.php');
 require_once('../lib/jwt_helper.php');
 require_once('../config/jwt.php');
@@ -29,6 +38,16 @@ if (function_exists($funcionNombre)) {
 function requireLogin () {
     $authHeader = getallheaders();
     try {
+        /*
+         La función sscanf se utiliza para analizar una cadena según un formato específico. 
+         En este caso, se está buscando una cadena que comience con la palabra "Bearer" 
+         seguida de un espacio ('Bearer '), y el %s indica que se espera una cadena de 
+         caracteres después de "Bearer". La función devuelve un array con los valores analizados.
+        */
+        /*
+        La declaración list se utiliza para asignar los valores del array devuelto por sscanf a 
+        las variables especificadas. En este caso, $jwt recibirá el valor obtenido después de "Bearer".
+        */
         list($jwt) = @sscanf($authHeader['Authorization'], 'Bearer %s');
         $datos = JWT::decode($jwt, JWT_KEY, JWT_ALG);
         $link = conectarBD();
@@ -39,7 +58,7 @@ function requireLogin () {
         } else if (mysqli_num_rows($result)!=1) {
             outputError(401);
         }
-        mysqli_close($link);
+        mysqli_close($link);        
     } catch(Exception $e) {
         outputError(401);
     }
@@ -87,14 +106,15 @@ function postLogin() {
         outputError(403);
     }
 
-    $sql = "SELECT id, name FROM user WHERE email='$email' AND `password`='$hash'";
+    $sql = "SELECT user.id, user.name, user.id_rol FROM user WHERE email='$email' AND `password`='$hash'";
     $result = mysqli_query($link, $sql);
     if($result && mysqli_num_rows($result)==1) {
         $logged = mysqli_fetch_assoc($result);
         $data = [
-            'uid'       => $logged['id'],
-            'name'    => $logged['name'],
-            'exp'       => time() + JWT_EXP,
+            'uid'  => $logged['id'],
+            'name' => $logged['name'],
+            'rol'  => $logged['id_rol'],
+            'exp'  => time() + JWT_EXP,
         ];
         $jwt = JWT::encode($data, JWT_KEY, JWT_ALG);
         $jwtSql = mysqli_real_escape_string($link, $jwt);
@@ -127,6 +147,7 @@ function postLogout() {
     getPublicaciones
 (S) [
         {
+            "id": "1",
             "title": "El title",
             "content": "Loremp ",
             "date": "2023-06-14",
@@ -136,9 +157,9 @@ function postLogout() {
     ]
 */
 function getPublicaciones() {
-    requireLogin();
+    // requireLogin();
     $link = conectarBD();
-    $sql = "SELECT publication.title, publication.content, publication.date, user.nick_name 
+    $sql = "SELECT publication.id, publication.title, publication.content, publication.date, user.nick_name 
             FROM `publication`
                 INNER JOIN user ON user.id = publication.id_user;"; 
 
@@ -154,6 +175,7 @@ function getPublicaciones() {
     //Obtiene la SIGUEINTE FILA de resultados de la consulta en forma de un arreglo asociativo. 
     //Cada fila de resultados se almacena en la variable $row.
     while($row = mysqli_fetch_assoc($result)) {
+        settype($row['id'], 'integer');
         $return[] =  $row; //Guardo la fila actual en el array
     }
 
@@ -169,15 +191,17 @@ function getPublicaciones() {
     {
         "title": "El title",
         "content": "Loremp ",
+        "id_user": "1",
         "date": "2023-06-14",
-        "nick_name": "Fede"        
+        "nick_name": "Fede",
+        "id_federation": "1"        
     }
 */
 function getPublicacionesConParametros($id) {
     requireLogin();
     $link = conectarBD();
     settype($id, 'integer');
-    $sql = "SELECT publication.title, publication.content, publication.date, user.nick_name 
+    $sql = "SELECT publication.title, publication.content, publication.id_user, publication.date, user.nick_name , publication.id_federation
             FROM `publication`
                 INNER JOIN user ON user.id = publication.id_user
             WHERE publication.id = $id;"; 
@@ -194,6 +218,13 @@ function getPublicacionesConParametros($id) {
         mysqli_close($link);
         outputError(404);
     }
+
+    // $return = [];
+    // while($row = mysqli_fetch_assoc($result)) {
+    //     settype($row['id_user'], 'integer');
+    //     settype($row['id_federation'], 'integer');
+    //     $return[] =  $row; //Guardo la fila actual en el array
+    // }
 
     $return = mysqli_fetch_assoc($result);
 
@@ -264,7 +295,7 @@ function getFederacionesConParametros($id) {
     }
     //Fecha = CURDATE() //Fecha actual
 */
-function postPublicaciones() {
+function postPublicaciones() {    
     requireLogin();
     $link = conectarBD();
     
@@ -285,7 +316,7 @@ function postPublicaciones() {
         $id_user = (int) $data['id_user'];
         $id_federation = (int) $data['id_federation'];
     } else {
-        mysqli_close($link);        
+        mysqli_close($link); 
         outputError(400);
     }
 
@@ -327,10 +358,10 @@ function patchPublicaciones($id) {
         mysqli_close($link);
         outputError(500);
     }
-    // Verificar si existe el actor con el ID proporcionado
+    // Verificar si existe la publicación con el ID proporcionado
     if (mysqli_num_rows($result) == 0) {
         mysqli_close($link);
-        outputError(404); // Actor no encontrado
+        outputError(404);
     }
 
 
@@ -339,8 +370,7 @@ function patchPublicaciones($id) {
         isset($data['title']) && !empty($data['title']) &&
         isset($data['content']) && !empty($data['content']) &&
         isset($data['id_federation'])
-    ) {
-        // Escapa los datos
+    ) {        
         $title = mysqli_real_escape_string($link, $data['title']);
         $content = mysqli_real_escape_string($link, $data['content']);
         $id_federation = (int) $data['id_federation'];
@@ -396,6 +426,45 @@ function deletePublicaciones($id) {
 
 /***************************** API - Métodos HTTP para USUARIOS ********************************/
 /*
+         getUsuarios
+(S) 
+    {
+        "id": "1",
+        "nick_name": "Fede",
+        "name": "Federico De Soya",
+        "email": "fede@gmail.com"       
+    }
+*/
+
+
+function getUsuarios() {
+    requireLogin();
+    $link = conectarBD();
+    $sql = "SELECT user.id, user.nick_name, user.name, user.email FROM user;"; 
+
+    $result = mysqli_query($link, $sql); 
+    if($result === false) {
+        echo "La consulta falló: " . mysqli_error($link);
+        mysqli_close($link);
+        outputError(500);
+    }
+
+    $return = []; // Array para almacenar los datos a enviar
+
+    //Obtiene la SIGUEINTE FILA de resultados de la consulta en forma de un arreglo asociativo. 
+    //Cada fila de resultados se almacena en la variable $row.
+    while($row = mysqli_fetch_assoc($result)) {
+        settype($row['id'], 'integer');
+        $return[] =  $row; //Guardo la fila actual en el array
+    }
+
+    mysqli_free_result($result); 
+    mysqli_close($link);
+    outputJson($return); // Devuelve los resultados en formato JSON con un código de respuesta 200
+}
+
+
+/*
          getUsuario/1
 (S) 
     {
@@ -408,7 +477,7 @@ function getUsuariosConParametros($id) {
     requireLogin();
     $link = conectarBD();
     settype($id, 'integer');
-    $sql = "SELECT user.nick_name, user.name, user.email 
+    $sql = "SELECT user.id, user.nick_name, user.name, user.email 
             FROM `user` 
             WHERE user.id = $id;"; 
 
@@ -454,14 +523,21 @@ function postUsuarios() {
         isset($data['nick_name']) && !empty($data['nick_name']) &&
         isset($data['name']) && !empty($data['name']) &&
         isset($data['email']) && !empty($data['email']) && filter_var($data['email'], FILTER_VALIDATE_EMAIL) &&
-        isset($data['password']) && !empty($data['password'])
+        isset($data['password']) && !empty($data['password']) &&
+        isset($data['confirmPassword']) && !empty($data['confirmPassword'])
     ) {
         // Escapa los datos
         $nick_name = mysqli_real_escape_string($link, $data['nick_name']);
         $name = mysqli_real_escape_string($link, $data['name']);
         $email = mysqli_real_escape_string($link, $data['email']);
         $password = mysqli_real_escape_string($link, $data['password']);
+        $confirmPassword = mysqli_real_escape_string($link, $data['confirmPassword']);
     } else {
+        mysqli_close($link);        
+        outputError(400);
+    }
+
+    if ($password !== $confirmPassword) {
         mysqli_close($link);        
         outputError(400);
     }

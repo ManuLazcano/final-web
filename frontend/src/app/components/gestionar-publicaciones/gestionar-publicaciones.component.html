@@ -1,0 +1,25 @@
+<h4 class="container mt-5">Publicaciones</h4>
+<div class="container mt-5 px-2">
+  <div class="table-responsive">
+    <table class="table table-responsive table-borderless table-striped">
+      <thead>
+        <tr class="bg-light">
+          <th scope="col" class="text-center">id</th>
+          <th scope="col" class="text-center">title</th>
+          <th scope="col" class="text-center">date</th>          
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of publications">
+          <td class="text-center">{{p.id}}</td>
+          <td class="text-center">{{p.title}}</td>
+          <td class="text-center">{{p.date}}</td>          
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editar(p.id)">Editar</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="borrar(p.id)">Borrar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
