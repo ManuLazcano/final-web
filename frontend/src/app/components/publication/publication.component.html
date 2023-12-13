@@ -1,0 +1,15 @@
+<main class="main-container container">
+    <section class="section-container">
+        <article class="card mb-3">
+            <!--<img src="..." class="card-img-top" alt="...">-->
+            <div class="card-body">              
+              <h5 class="card-title">{{publication?.title}}</h5>
+              <p class="card-text">{{publication?.content}}</p>
+              <p class="card-text">Publicado: <small class="text-body-secondary">{{publication?.date}}</small></p>                
+         
+              <button *ngIf="loogedIn && isOwner()" type="button" class="btn btn-primary" (click)="navigateToEditPage()">Editar</button>
+              <button *ngIf="loogedIn && isOwner()" type="button" class="btn btn-danger" (click)="deletePublication()">Eliminar</button>
+            </div>
+          </article>
+    </section>
+</main>

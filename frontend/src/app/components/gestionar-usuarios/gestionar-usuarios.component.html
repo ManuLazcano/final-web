@@ -1,0 +1,62 @@
+<h4 class="container my-5">Usuarios</h4>
+<div class="container mt-5 px-2">
+  <div class="table-responsive">
+    <table class="table table-responsive table-borderless table-striped">
+      <thead>
+        <tr class="bg-light">
+          <th scope="col" class="text-center">id</th>
+          <th scope="col" class="text-center">Nombre</th>
+          <th scope="col" class="text-center">Nickname</th>
+          <th scope="col" class="text-center">E-mail</th>          
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users">
+          <td class="text-center">{{u.id}}</td>
+          <td class="text-center">{{u.name}}</td>
+          <td class="text-center">{{u.nick_name}}</td>
+          <td class="text-center">{{u.email}}</td>          
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editar(u.id)">Editar</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="borrar(u.id)">Borrar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<form class="container form-floating" [formGroup]="formUser" (ngSubmit)="submitData()">
+    <div class="card p-4 mt-5">
+      <div class="row g-3">
+        <div class="col-12 mb-4">
+          <h4>Formulario de usuarios</h4>
+          <span class="text-muted">Para editar un usuario.</span>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <div class="form-floating">
+            <input type="text" class="form-control" placeholder="Nombre" formControlName="name" required>
+            <label>Nombre</label>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <div class="form-floating">
+            <input type="text" class="form-control" placeholder="nickname" formControlName="nick_name" required>
+            <label>Nickname</label>
+            <!-- <div *ngIf="miFormulario.controls['cuit'].hasError('min')">
+              Debe ingresar un cuit valido.
+            </div> -->
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="form-floating">
+              <input type="email" class="form-control" placeholder="E-mail" formControlName="email" required>
+              <label>E-mail</label>
+            </div>
+          </div>        
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn btn-primary me-1"  [disabled]="formUser.invalid">Guardar</button>
+           <button type="button" class="btn btn-secondary" (click)="descartar()">Descartar</button> <!--(click)="descartar()" -->
+        </div>
+      </div>
+    </div>
+  </form>
